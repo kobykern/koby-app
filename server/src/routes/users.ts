@@ -1,10 +1,14 @@
 import {Router} from 'express';
+import { getUsers, createUser, getUserDetails, loginUser } from '../controller/users';
+import { authenticate } from '../middleware/auth';
 
 const router = Router();
 
-// Example route for getting all users
-router.get('/', (req, res) => {
-  res.json({ message: 'Get all users' });
-});
+// LOGIN //
+router.post('/login', loginUser);
+
+router.get('/', authenticate, getUsers);
+router.post('/', createUser);
+router.get('/:id', getUserDetails);
 
 export default router;

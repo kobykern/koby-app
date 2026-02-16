@@ -1,11 +1,10 @@
-import {Request, Response, NextFunction} from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { User } from '../generated/prisma/browser';
 import { verify } from 'jsonwebtoken';
-
 import prisma from '../prisma';
 
 export interface ExpressRequest extends Request {
-    user?: User
+    user?: User;
 }
 
 export const authenticate = async (req: ExpressRequest, res: Response, next: NextFunction): Promise<void> => {
@@ -22,18 +21,20 @@ export const authenticate = async (req: ExpressRequest, res: Response, next: Nex
     }
 
     try {
-        const decode = verify(token, 'JWT_SECRET_KEY') as { email: string };
+        const decoded = verify(token, process.env.JWT_SECRET!) as { id: number; email: string };
 
         const user = await prisma.user.findUnique({
-            where: { email: decode.email },
+            where: { email: decoded.email },
         });
 
-        req.user = user || undefined;
-        next();
+        if (!user) {
+            res.status(401).json({ message: 'User no longer exists' });
+            return;
+        }
 
+        req.user = user;
+        next();
     } catch (error) {
-        req.user = undefined;
         res.status(401).json({ message: 'Invalid token' });
     }
-
-}
+};

@@ -7,7 +7,7 @@ export interface ExpressRequest extends Request {
     user?: User;
 }
 
-export const authenticate = async (req: ExpressRequest, res: Response, next: NextFunction): Promise<void> => {
+export const authenticate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     if (!req.headers.authorization) {
         res.status(401).json({ message: 'Unauthorized' });
         return;

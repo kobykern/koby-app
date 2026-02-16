@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
 import { hash, compare } from 'bcrypt';
 import { verify } from 'jsonwebtoken';
-import { CreateUserRequest } from '../types/createUser';
-import { generateAccessToken, generateRefreshToken, revokeToken, isTokenRevoked } from '../config/jwt';
-import prisma from '../prisma';
+import { CreateUserRequest } from '../../types/createUser';
+import { generateAccessToken, generateRefreshToken, revokeToken, isTokenRevoked } from '../../config/jwt';
+import prisma from '../../prisma';
 
 // ------------ //
 // REGISTRATION //

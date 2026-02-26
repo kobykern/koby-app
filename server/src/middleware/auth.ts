@@ -4,7 +4,7 @@ import { verify } from 'jsonwebtoken';
 import prisma from '../prisma';
 
 export interface ExpressRequest extends Request {
-    user?: User;
+    user?: User & { id: string };
 }
 
 export const authenticate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -32,7 +32,7 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
             return;
         }
 
-        req.user = user;
+        req.user = { ...user, id: String(user.id) };
         next();
     } catch (error) {
         res.status(401).json({ message: 'Invalid token' });

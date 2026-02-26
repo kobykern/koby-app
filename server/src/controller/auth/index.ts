@@ -10,14 +10,19 @@ import prisma from '../../prisma';
 // ------------ //
 export async function register(req: Request<CreateUserRequest>, res: Response) {
     try {
-        const { name, email } = req.body;
-        const hashedPassword = await hash(req.body.password, 10);
+        const { firstName, lastName, email, password } = req.body;
+        const hashedPassword = await hash(password, 10);
 
         const user = await prisma.user.create({
-            data: { name, email, password: hashedPassword },
+            data: {
+                firstName,
+                lastName,
+                email,
+                hashedPassword,
+            },
         });
 
-        const { password: _password, ...userWithoutPassword } = user;
+        const { hashedPassword: _hp, ...userWithoutPassword } = user;
 
         res.status(201).json({
             ...userWithoutPassword,
@@ -44,14 +49,14 @@ export async function login(req: Request<CreateUserRequest>, res: Response) {
             return;
         }
 
-        const isPasswordValid = await compare(req.body.password, user.password);
+        const isPasswordValid = await compare(req.body.password, user.hashedPassword);
 
         if (!isPasswordValid) {
             res.status(401).json({ message: 'Email or Password is incorrect' });
             return;
         }
 
-        const { password: _password, name: _name, ...userWithoutPassword } = user;
+        const { hashedPassword: _hp, ...userWithoutPassword } = user;
 
         res.json({
             ...userWithoutPassword,

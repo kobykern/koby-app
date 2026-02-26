@@ -8,51 +8,28 @@ import {
   StyleSheet,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../App';
-import { storeTokens } from '../utils/api';
+import type { AuthStackParamList } from '../navigation/AuthStack';
+import { useAuth } from '../hooks/useAuth';
 
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_API_URL;
+type Props = NativeStackScreenProps<AuthStackParamList, 'Login'>;
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Register'>;
-
-export default function RegisterScreen({ navigation }: Props): JSX.Element {
-  const [name, setName] = useState('');
+export default function LoginScreen({ navigation }: Props): JSX.Element {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const { login } = useAuth();
 
-  const handleRegister = async () => {
+  const handleLogin = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        await storeTokens(data.accessToken, data.refreshToken);
-        Alert.alert('Success', 'Account created!');
-        navigation.replace('Home');
-      } else {
-        Alert.alert('Error', data.message || 'Registration failed');
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Network error');
-      console.error('Register error:', error);
+      await login(email, password);
+      // No navigation needed — RootNavigator swaps to AppStack automatically
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Login failed');
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Register</Text>
-
-      <TextInput
-        placeholder="Name"
-        value={name}
-        onChangeText={setName}
-        style={styles.input}
-      />
+      <Text style={styles.title}>Login</Text>
 
       <TextInput
         placeholder="Email"
@@ -71,12 +48,12 @@ export default function RegisterScreen({ navigation }: Props): JSX.Element {
         style={styles.input}
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleRegister}>
-        <Text style={styles.buttonText}>Register</Text>
+      <TouchableOpacity style={styles.button} onPress={handleLogin}>
+        <Text style={styles.buttonText}>Log In</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-        <Text style={styles.link}>Already have an account? Log in</Text>
+      <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+        <Text style={styles.link}>Don't have an account? Register</Text>
       </TouchableOpacity>
     </View>
   );

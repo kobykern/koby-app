@@ -8,42 +8,44 @@ import {
   StyleSheet,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../App';
-import { storeTokens } from '../utils/api';
+import type { AuthStackParamList } from '../navigation/AuthStack';
+import { useAuth } from '../hooks/useAuth';
 
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_API_URL;
+type Props = NativeStackScreenProps<AuthStackParamList, 'Register'>;
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
-
-export default function LoginScreen({ navigation }: Props): JSX.Element {
+export default function RegisterScreen({ navigation }: Props): JSX.Element {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const { register } = useAuth();
 
-  const handleLogin = async () => {
+  const handleRegister = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        await storeTokens(data.accessToken, data.refreshToken);
-        navigation.replace('Home');
-      } else {
-        Alert.alert('Error', data.message || 'Login failed');
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Network error');
-      console.error('Login error:', error);
+      await register(firstName, lastName, email, password);
+      // No navigation needed — RootNavigator swaps to AppStack automatically
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Registration failed');
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
+      <Text style={styles.title}>Register</Text>
+
+      <TextInput
+        placeholder="First Name"
+        value={firstName}
+        onChangeText={setFirstName}
+        style={styles.input}
+      />
+
+      <TextInput
+        placeholder="Last Name"
+        value={lastName}
+        onChangeText={setLastName}
+        style={styles.input}
+      />
 
       <TextInput
         placeholder="Email"
@@ -62,12 +64,12 @@ export default function LoginScreen({ navigation }: Props): JSX.Element {
         style={styles.input}
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Log In</Text>
+      <TouchableOpacity style={styles.button} onPress={handleRegister}>
+        <Text style={styles.buttonText}>Register</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-        <Text style={styles.link}>Don't have an account? Register</Text>
+      <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+        <Text style={styles.link}>Already have an account? Log in</Text>
       </TouchableOpacity>
     </View>
   );
